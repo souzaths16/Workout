@@ -3,7 +3,7 @@ import { buildableLoads, nextLoad, prevLoad, snapLoad, DEFAULT_INVENTORY } from 
 import { prescribe } from './prescribe'
 import { EXERCISE_BY_ID } from './exercises'
 import { soreSwap } from './sore'
-import { buildWeek, planBlocks, shouldTrim, weekTotalSets } from './week'
+import { buildWeek, planBlocks, shouldTrim, swapDays, weekTotalSets } from './week'
 import { recovery } from './recovery'
 import { pullupResult } from './pullup'
 import { epley, weeklyVolume } from './stats'
@@ -97,6 +97,18 @@ describe('week and session plan', () => {
     const mk = (d: number): Session => ({ id: String(d), date: '2026-09-21', templateId: 'bracos_a', startedAt: 'x', finishedAt: 'y', durationSec: d, exercises: [] })
     expect(shouldTrim('bracos_a', [mk(2000), mk(1900)], 30)).toBe(true)
     expect(shouldTrim('bracos_a', [mk(2000), mk(1700)], 30)).toBe(false)
+  })
+  it('swapDays pulls a lift day onto a rest/row day, keeping total sets and every other day untouched', () => {
+    const w = buildWeek('2026-09-21', settings) // Sunday (idx 6) is 'remo'
+    const before = weekTotalSets(w)
+    const r = swapDays(w, 6, 0) // bring Monday's Braços A onto Sunday
+    expect(r.days[6].templateId).toBe('bracos_a')
+    expect(r.days[6].status).toBe('swapped')
+    expect(r.days[6].sourceTemplateId).toBe('remo')
+    expect(r.days[0].templateId).toBe('remo')
+    expect(r.days[0].sourceTemplateId).toBe('bracos_a')
+    expect(r.days.slice(1, 6)).toEqual(w.days.slice(1, 6))
+    expect(weekTotalSets(r)).toBe(before)
   })
 })
 

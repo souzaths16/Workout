@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { SetRow, SetHeader } from '@/components/SetRow'
 import { RestTimer } from '@/components/RestTimer'
 import { SoreSheet } from '@/components/SoreSheet'
+import { ChooseDaySheet } from '@/components/ChooseDaySheet'
 import { EvidenceBadge } from '@/components/EvidenceBadge'
 import { t } from '@/i18n/pt-BR'
 import { cn } from '@/lib/utils'
@@ -37,6 +38,7 @@ export function Hoje() {
   const [restKey, setRestKey] = useState(0)
   const [restSec, setRestSec] = useState(90)
   const [warm, setWarm] = useState<boolean[]>([false, false])
+  const [chooseOpen, setChooseOpen] = useState(false)
   const active = st.active && st.active.date === today ? st.active : null
   const elapsed = useClock(active?.startedAt)
   const capSec = st.settings.sessionCapMin * 60
@@ -87,6 +89,10 @@ export function Hoje() {
             )}
           </CardContent>
         </Card>
+        {day.status !== 'done' && (
+          <Button variant="outline" className="mt-3 w-full" onClick={() => setChooseOpen(true)}>{t.hoje.trainInstead}</Button>
+        )}
+        <ChooseDaySheet open={chooseOpen} onOpenChange={setChooseOpen} week={week} excludeDate={today} onPick={otherDate => st.swapWithDay(today, otherDate)} />
       </div>
     )
   }
