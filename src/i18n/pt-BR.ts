@@ -7,7 +7,8 @@ export const t = {
     cooldown: 'Alongamento (mobilidade)', stretchNote: 'Alongar depois do treino não reduz a dor muscular (Cochrane 2011). Está aqui por mobilidade, porque você pediu.',
     set: 'Série', load: 'kg', reps: 'reps', rir: 'RIR', amrap: 'MÁX', calibration: 'Calibração', buy: 'Comprar peso', pain: 'Dor no joelho (0–10)',
     paired: 'pareado com', rest: 'Descanso', clock: 'Sessão', over: 'acima do limite', doneToday: 'Treino concluído', alreadyDone: 'Você já concluiu o treino de hoje.',
-    noWeek: 'Semana não gerada', hold: 'seg', seconds: 's', assist: 'banda', noAssist: 'sem banda'
+    noWeek: 'Semana não gerada', hold: 'seg', seconds: 's', assist: 'banda', noAssist: 'sem banda',
+    trainInstead: 'Treinar hoje', chooseTitle: 'Qual treino você quer fazer hoje?', chooseHint: 'O dia escolhido vira descanso/remo no lugar de hoje. O total de séries da semana não muda.', chooseNone: 'Nenhum outro dia de treino disponível esta semana.'
   },
   semana: { title: 'Semana', recovery: 'Recuperação', sets: 'séries', swapped: 'trocado', done: 'feito', planned: 'planejado', skipped: 'pulado', total: 'Total de séries na semana', rule: 'Cada grupo tem ≥48 h entre sessões.' },
   progresso: { title: 'Progresso', volume: 'Séries por grupo muscular por semana', e1rm: '1RM estimado (Epley)', pullup: 'Barra fixa: estágio e repetições estritas', adherence: 'Adesão (treinos feitos / planejados)', body: 'Peso corporal e circunferência do braço', empty: 'Ainda sem dados.' },

@@ -33,3 +33,20 @@ export function planBlocks(t: DayTemplate, weekIndex: number, light: boolean, tr
 
 export const templateSets = (templateId: string): number => (TEMPLATE_BY_ID[templateId]?.blocks ?? []).reduce((a, b) => a + b.sets, 0)
 export const weekTotalSets = (w: WeekPlan): number => w.days.reduce((a, d) => a + templateSets(d.templateId), 0)
+
+/**
+ * Swap the templates of two days in the same week (e.g. pull a lift day
+ * forward onto a rest/row day). Only the two days change; every other day
+ * and the week's total sets are untouched. Both days must be 'planned'
+ * (the caller is responsible for that check, so a finished day is never
+ * silently rewritten).
+ */
+export function swapDays(week: WeekPlan, i: number, j: number): WeekPlan {
+  if (i === j || i < 0 || j < 0 || i >= week.days.length || j >= week.days.length) return week
+  const days = week.days.map(d => ({ ...d }))
+  const a = days[i], b = days[j]
+  const ta = a.templateId, tb = b.templateId
+  days[i] = { ...a, templateId: tb, status: 'swapped', sourceTemplateId: ta }
+  days[j] = { ...b, templateId: ta, status: 'swapped', sourceTemplateId: tb }
+  return { ...week, days }
+}

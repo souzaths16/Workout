@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { AppState, BodyLog, MuscleGroup, Rir, Session, SessionExercise, SetLog, Settings, WeekPlan, BandLevel, Inventory } from '@/domain/types'
 import { DEFAULT_INVENTORY } from '@/domain/inventory'
-import { buildWeek, planBlocks, shouldTrim } from '@/domain/week'
+import { buildWeek, planBlocks, shouldTrim, swapDays } from '@/domain/week'
 import { TEMPLATE_BY_ID } from '@/domain/templates'
 import { EXERCISE_BY_ID } from '@/domain/exercises'
 import { prescribe } from '@/domain/prescribe'
@@ -29,6 +29,7 @@ export interface Store extends AppState {
   discardSession: () => void
   logRowing: (date: string, minutes: number) => void
   markSore: (date: string, groups: MuscleGroup[]) => ReturnType<typeof soreSwap>['outcome']
+  swapWithDay: (date: string, otherDate: string) => void
   toggleLightWeek: (date: string) => void
   logPullupTest: (date: string, strictReps: number) => void
   setPullupStage: (stage: number) => void
@@ -128,6 +129,15 @@ export const useStore = create<Store>()(persist((set, get) => ({
     const r = soreSwap(week, idx, groups, st.sessions, new Date())
     if (r.outcome !== 'none') set(s => ({ weeks: s.weeks.map(w => w.weekStart === week.weekStart ? r.week : w), active: null }))
     return r.outcome
+  },
+  swapWithDay: (date, otherDate) => {
+    const st = get()
+    const week = st.ensureWeek(date)
+    const i = week.days.findIndex(d => d.date === date)
+    const j = week.days.findIndex(d => d.date === otherDate)
+    if (i < 0 || j < 0 || week.days[i].status !== 'planned' || week.days[j].status !== 'planned') return
+    const updated = swapDays(week, i, j)
+    set(s => ({ weeks: s.weeks.map(w => w.weekStart === week.weekStart ? updated : w), active: null }))
   },
   toggleLightWeek: (date) => { get().ensureWeek(date); set(s => ({ weeks: s.weeks.map(w => w.weekStart === mondayOf(date) ? { ...w, light: !w.light } : w) })) },
 
