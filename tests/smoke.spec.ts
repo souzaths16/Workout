@@ -12,7 +12,7 @@ test('log a session, persist across reload, chart it, export, reset and import',
   const done = page.getByRole('button', { name: 'concluir série' })
   await expect(done.first()).toBeVisible()
   const n = await done.count()
-  expect(n).toBe(9) // week 1: 3 sets × 3 exercises
+  expect(n).toBe(12) // week 1: 3 sets × 4 exercises
   for (let i = 0; i < n; i++) await done.nth(i).click()
   await page.screenshot({ path: 'test-results/02-hoje-session.png', fullPage: true })
   await page.getByRole('button', { name: 'Concluir treino' }).click()
