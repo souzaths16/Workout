@@ -1,7 +1,6 @@
 import { Redis } from '@upstash/redis'
 
 const KEY = 'treino-backup'
-const redis = Redis.fromEnv()
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -24,18 +23,24 @@ export default async function handler(req, res) {
     return
   }
 
-  if (req.method === 'GET') {
-    const data = await redis.get(KEY)
-    res.status(200).json(data ?? null)
-    return
-  }
+  try {
+    const redis = Redis.fromEnv()
+    if (req.method === 'GET') {
+      const data = await redis.get(KEY)
+      res.status(200).json(data ?? null)
+      return
+    }
 
-  if (req.method === 'PUT') {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-    await redis.set(KEY, body)
-    res.status(200).json({ ok: true })
-    return
-  }
+    if (req.method === 'PUT') {
+      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+      await redis.set(KEY, body)
+      res.status(200).json({ ok: true })
+      return
+    }
 
-  res.status(405).json({ error: 'method not allowed' })
+    res.status(405).json({ error: 'method not allowed' })
+  } catch (err) {
+    // Surfaced behind the SYNC_TOKEN check above, so safe to expose for debugging.
+    res.status(500).json({ error: 'redis_failed', message: err instanceof Error ? err.message : String(err) })
+  }
 }
