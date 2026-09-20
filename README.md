@@ -6,7 +6,15 @@ App pessoal de força para hipertrofia, feito para o celular, em pt-BR. Programa
 
 1. Abra a URL do GitHub Pages do repositório (Settings → Pages → Source: *GitHub Actions*; o workflow `deploy.yml` publica a cada push na `main`).
 2. No Safari/Chrome: *Compartilhar → Adicionar à Tela de Início*. Funciona offline.
-3. Os dados ficam só no aparelho (`localStorage`). Exporte JSON/CSV em Ajustes de vez em quando.
+3. Os dados ficam só no aparelho (`localStorage`) — limpar o cache do navegador apaga tudo. Exporte JSON/CSV em Ajustes de vez em quando, ou configure o backup na nuvem (próximo item).
+
+## Backup na nuvem (opcional)
+
+`api/sync.js` é uma function que guarda uma cópia dos seus dados num banco Redis (Upstash), pra sobreviver a limpezas de cache/reinstalação:
+
+1. No [Vercel](https://vercel.com), importe este repositório como um novo projeto e adicione a variável de ambiente `SYNC_TOKEN` (qualquer segredo forte).
+2. Depois do deploy, em *Storage*, adicione uma integração Redis (Marketplace → Upstash) e conecte ao projeto — isso injeta as variáveis `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` que `api/sync.js` usa.
+3. No app, em Ajustes → Backup na nuvem, preencha a URL do deploy e o mesmo `SYNC_TOKEN`. O app sincroniza sozinho ~2 s depois de qualquer alteração; "Restaurar do backup" traz os dados de volta em um aparelho novo.
 
 ## Desenvolvimento
 

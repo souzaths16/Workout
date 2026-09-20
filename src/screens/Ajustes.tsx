@@ -4,6 +4,7 @@ import { buildableLoads } from '@/domain/inventory'
 import { exportCsv, exportJson, importJson } from '@/domain/exportImport'
 import { EVIDENCE, TIER_LABEL } from '@/domain/evidence'
 import { CALIBRATABLE_EXERCISES, parseFitbodCsv, suggestFitbodMapping, type FitbodEntry } from '@/domain/fitbodImport'
+import { pullBackup, pushBackup } from '@/lib/sync'
 import { download } from '@/lib/download'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -27,6 +28,8 @@ export function Ajustes() {
   const [newKb, setNewKb] = useState('')
   const [newBand, setNewBand] = useState('')
   const [newAdj, setNewAdj] = useState({ min: '2.5', max: '24', step: '2.5' })
+  const [syncMsg, setSyncMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [syncBusy, setSyncBusy] = useState(false)
   const pairMax = buildableLoads(inv, 'dumbbell_pair').at(-1) ?? 0
   const singleMax = buildableLoads(inv, 'dumbbell_single').at(-1) ?? 0
   const state = { schemaVersion: st.schemaVersion, settings: st.settings, weeks: st.weeks, sessions: st.sessions, pullup: st.pullup, body: st.body, active: st.active }
@@ -129,6 +132,28 @@ export function Ajustes() {
             }}>{t.ajustes.fitbodApply}</Button>
             {fitbodApplied && <p className="text-sm text-muted-foreground">{t.ajustes.fitbodApplied}</p>}
           </>}
+        </CardContent></Card>
+
+      <Card><CardHeader><CardTitle>{t.ajustes.sync}</CardTitle><CardDescription>{t.ajustes.syncHint}</CardDescription></CardHeader>
+        <CardContent className="space-y-3">
+          <div><Label>{t.ajustes.syncUrl}</Label><Input placeholder="https://workout.vercel.app" value={st.settings.syncUrl ?? ''} onChange={e => st.updateSettings({ syncUrl: e.target.value })} /></div>
+          <div><Label>{t.ajustes.syncToken}</Label><Input type="password" value={st.settings.syncToken ?? ''} onChange={e => st.updateSettings({ syncToken: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="secondary" disabled={syncBusy || !st.settings.syncUrl || !st.settings.syncToken} onClick={async () => {
+              setSyncBusy(true); setSyncMsg(null)
+              try { await pushBackup(st.settings.syncUrl!, st.settings.syncToken!, state); setSyncMsg({ ok: true, text: t.ajustes.syncPushed }) }
+              catch (ex) { setSyncMsg({ ok: false, text: (ex as Error).message }) }
+              setSyncBusy(false)
+            }}>{t.ajustes.syncPush}</Button>
+            <Button variant="outline" disabled={syncBusy || !st.settings.syncUrl || !st.settings.syncToken} onClick={async () => {
+              if (!confirm(t.ajustes.syncPullConfirm)) return
+              setSyncBusy(true); setSyncMsg(null)
+              try { st.importState(await pullBackup(st.settings.syncUrl!, st.settings.syncToken!)); setSyncMsg({ ok: true, text: t.ajustes.syncPulled }) }
+              catch (ex) { setSyncMsg({ ok: false, text: (ex as Error).message }) }
+              setSyncBusy(false)
+            }}>{t.ajustes.syncPull}</Button>
+          </div>
+          {syncMsg && <p className={`text-sm ${syncMsg.ok ? 'text-muted-foreground' : 'text-destructive'}`}>{syncMsg.text}</p>}
         </CardContent></Card>
 
       <Card><CardHeader><CardTitle>{t.ajustes.evidence}</CardTitle><CardDescription>Hierarquia: mulheres 40+ → mulheres → sexo misto/homens (extrapolado, sempre sinalizado).</CardDescription></CardHeader>

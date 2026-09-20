@@ -19,7 +19,10 @@ export const t = {
     weekMode: 'Formato da semana', mode6: '6 dias × 45 min', mode4: '4 dias × 45 min', rowRest: 'Remo leve no dia de descanso', startDate: 'Início do programa', cap: 'Limite por sessão (min)', bodyweight: 'Peso corporal (kg)',
     export: 'Exportar', exportJson: 'Exportar JSON', exportCsv: 'Exportar CSV', import: 'Importar JSON', reset: 'Apagar tudo', resetConfirm: 'Apagar todos os dados? Não dá para desfazer.', shopping: 'Lista de compras', evidence: 'Evidências', buyNow: 'Agora', buyLater: 'Depois, quando o app avisar',
     fitbod: 'Calibrar peso inicial com o Fitbod', fitbodHint: 'Suba o CSV exportado do Fitbod (conta em fitbod.me → Export). Para cada exercício do programa, escolha o exercício equivalente do seu histórico (ou "nenhum"); o app sugere um peso inicial com a carga mais recente.',
-    fitbodUpload: 'Escolher CSV do Fitbod', fitbodNone: 'nenhum', fitbodApply: 'Aplicar pesos sugeridos', fitbodApplied: 'Peso(s) inicial(is) calibrado(s).' },
+    fitbodUpload: 'Escolher CSV do Fitbod', fitbodNone: 'nenhum', fitbodApply: 'Aplicar pesos sugeridos', fitbodApplied: 'Peso(s) inicial(is) calibrado(s).',
+    sync: 'Backup na nuvem', syncHint: 'Guarda uma cópia dos seus dados num endpoint que você mesma hospeda no Vercel (veja /api/sync no repositório). Sincroniza sozinho ~2 s depois de qualquer alteração, quando configurado.',
+    syncUrl: 'URL do deploy (Vercel)', syncToken: 'Token (SYNC_TOKEN)', syncPush: 'Sincronizar agora', syncPull: 'Restaurar do backup',
+    syncPulled: 'Dados restaurados do backup.', syncPushed: 'Backup enviado.', syncPullConfirm: 'Isso substitui os dados deste aparelho pelos do backup na nuvem. Continuar?' },
   groups: { biceps: 'Bíceps', triceps: 'Tríceps', peito: 'Peito', costas: 'Costas', ombros: 'Ombros', quadriceps: 'Quadríceps', posterior_gluteos: 'Posterior/glúteos', panturrilha: 'Panturrilha' } as Record<string, string>,
   sore: { title: 'Quais grupos estão doloridos?', apply: 'Trocar o treino de hoje', swap: 'Treino trocado com outro dia da semana.', row: 'Hoje virou remo leve; o treino foi movido para o dia de descanso.', none: 'O treino de hoje não usa esses grupos.' },
   common: { cancel: 'Cancelar', ok: 'OK', save: 'Salvar', close: 'Fechar', week: 'Semana' }

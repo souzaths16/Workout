@@ -106,6 +106,9 @@ export interface Settings {
   stretchNoteSeen: boolean
   /** per-exercise first-session load (kg), overriding Exercise.startKg — e.g. calibrated from an imported Fitbod history */
   startKgOverrides?: Record<string, number>
+  /** cloud backup: base URL of the Vercel deployment hosting /api/sync, and its shared secret */
+  syncUrl?: string
+  syncToken?: string
 }
 
 export interface AppState {
