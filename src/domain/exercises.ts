@@ -76,8 +76,8 @@ export const EXERCISES: Exercise[] = [
     nome: 'Agachamento búlgaro',
     primary: 'quadriceps', secondary: ['posterior_gluteos'],
     loadType: 'dumbbell_pair', repRange: [8, 12], restSec: 120, tempo: '3 s descendo',
-    cues: ['Pé de trás no banco, halteres nas mãos', 'Desça fundo, joelho da frente alinhado com o pé', 'Nas 2 primeiras semanas, amplitude parcial se o joelho reclamar'],
-    warmupRule: 'ramp', startKg: 6, painCheck: true,
+    cues: ['Pé de trás no banco, halteres nas mãos', 'Desça fundo, joelho da frente alinhado com o pé', 'Nas 2 primeiras semanas, amplitude parcial se o joelho reclamar', 'Quando o app pedir banda: pise nela com o pé da frente e passe por trás do pescoço'],
+    warmupRule: 'ramp', startKg: 6, painCheck: true, bandTopUp: true,
     evidence: { tier: 'W', refs: [11, 13, 14, 34], note: 'Mulheres: variação de agachamento é livre (Enes 2024); progressão unilateral cresceu tanto quanto barra (Sci Rep 2023); amplitude longa favorece o quadríceps (Pedrosa 2022, 45 mulheres).' },
     stretches: ['Alongamento de quadríceps em pé (30 s por lado)', 'Alongamento de glúteo deitada (30 s por lado)']
   },
@@ -86,8 +86,8 @@ export const EXERCISES: Exercise[] = [
     nome: 'Terra romeno com halteres',
     primary: 'posterior_gluteos', secondary: [],
     loadType: 'dumbbell_pair', repRange: [8, 12], restSec: 120, tempo: '3 s descendo',
-    cues: ['Joelhos levemente flexionados, coluna neutra', 'Empurre o quadril para trás até sentir o posterior alongar', 'Halteres rentes às pernas'],
-    warmupRule: 'ramp', startKg: 10,
+    cues: ['Joelhos levemente flexionados, coluna neutra', 'Empurre o quadril para trás até sentir o posterior alongar', 'Halteres rentes às pernas', 'Quando o app pedir banda: pise nela com os dois pés e segure as pontas junto com o halter'],
+    warmupRule: 'ramp', startKg: 10, bandTopUp: true,
     evidence: { tier: 'X', refs: [30, 31], note: 'Extrapolado: treinar o posterior com quadril flexionado (alongado) cresce mais (Maeo 2021, 20 adultos). Nenhum estudo só com mulheres encontrado.' },
     stretches: ['Alongamento de posterior sentada (30 s por lado)']
   },
@@ -100,7 +100,37 @@ export const EXERCISES: Exercise[] = [
     warmupRule: 'none', startKg: 8,
     evidence: { tier: 'W', refs: [12], note: 'Mulheres: parciais na posição alongada cresceram mais a panturrilha (Kassiano 2023, 42 mulheres).' },
     stretches: ['Alongamento de panturrilha na parede (30 s por lado)']
-  }
+  },
+  {
+    id: 'face_pull_banda',
+    nome: 'Face pull com banda',
+    primary: 'ombros', secondary: ['costas'],
+    loadType: 'band', repRange: [12, 20], restSec: 60, tempo: '2 s puxando, controle na volta',
+    cues: ['Prenda a banda numa porta ou na barra, na altura do rosto', 'Puxe cotovelos para trás e para cima, girando os punhos', 'Aperte as escápulas no fim do movimento'],
+    warmupRule: 'none', startKg: 15,
+    evidence: { tier: 'unknown', refs: [], note: 'Sem RCT de hipertrofia com esse exercício. Escolhido pelo deltoide posterior e pela saúde do ombro, que os outros exercícios não cobrem.' },
+    stretches: ['Alongamento de ombro cruzando o braço (30 s por lado)']
+  },
+  {
+    id: 'agachamento_banda',
+    nome: 'Agachamento com banda',
+    primary: 'quadriceps', secondary: ['posterior_gluteos'],
+    loadType: 'band', repRange: [12, 20], restSec: 90, tempo: '3 s descendo',
+    cues: ['Pise na banda com os dois pés, largura dos ombros', 'Passe a banda por trás do pescoço, segurando as pontas', 'Desça fundo, joelho alinhado com o pé'],
+    warmupRule: 'none', startKg: 20, painCheck: true,
+    evidence: { tier: 'X', refs: [13, 41], note: 'Extrapolado: variação de agachamento é livre em mulheres (Enes 2024); banda e peso livre dão ganho de força semelhante (Lopes 2019, meta-análise, sexo misto).' },
+    stretches: ['Alongamento de quadríceps em pé (30 s por lado)', 'Alongamento de glúteo deitada (30 s por lado)']
+  },
+  {
+    id: 'flexao_banda',
+    nome: 'Flexão com banda nas costas',
+    primary: 'peito', secondary: ['triceps', 'ombros'],
+    loadType: 'band', repRange: [8, 15], restSec: 90, tempo: '3 s descendo',
+    cues: ['Passe a banda pelas costas, uma ponta em cada mão no chão', 'Sem banda (0 kg) se ainda estiver difícil; joelhos no chão se precisar', 'Desça até o peito quase tocar o chão'],
+    warmupRule: 'none', startKg: 0,
+    evidence: { tier: 'M', refs: [42], note: 'Extrapolado: flexão com banda e supino, igualados em ativação, deram ganho de força semelhante (Calatayud 2015, 30 homens).' },
+    stretches: ['Alongamento de peito no batente da porta (30 s)', 'Alongamento de tríceps acima da cabeça (30 s por lado)']
+  },
 ]
 
 export const EXERCISE_BY_ID: Record<string, Exercise> = Object.fromEntries(EXERCISES.map(e => [e.id, e]))

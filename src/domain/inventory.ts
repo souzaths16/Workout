@@ -8,12 +8,12 @@ export const DEFAULT_INVENTORY: Inventory = {
   handles: 2,
   adjustable: [],
   kettlebells: [8],
-  bands: ['leve', 'media', 'pesada'],
+  bands: [10, 15, 20, 30, 40],
   dipBelt: false
 }
 
 /** Every dumbbell weight that can be built for a pair (both hands) or a single dumbbell. */
-export function buildableLoads(inv: Inventory, loadType: LoadType): number[] {
+function buildableDumbbellLoads(inv: Inventory, loadType: 'dumbbell_pair' | 'dumbbell_single'): number[] {
   const out = new Set<number>()
   const pair = loadType === 'dumbbell_pair'
   const divisor = pair ? 4 : 2
@@ -34,6 +34,28 @@ export function buildableLoads(inv: Inventory, loadType: LoadType): number[] {
   if (!pair) for (const k of inv.kettlebells) out.add(round2(k))
   return [...out].sort((x, y) => x - y)
 }
+
+/** Every load a single band, or a stack of two distinct bands, can provide. Includes 0 (no band). */
+function buildableBandLoads(inv: Inventory): number[] {
+  const out = new Set<number>([0])
+  for (const b of inv.bands) out.add(round2(b))
+  for (let i = 0; i < inv.bands.length; i++) {
+    for (let j = i + 1; j < inv.bands.length; j++) out.add(round2(inv.bands[i] + inv.bands[j]))
+  }
+  return [...out].sort((x, y) => x - y)
+}
+
+export function buildableLoads(inv: Inventory, loadType: LoadType): number[] {
+  if (loadType === 'band') return buildableBandLoads(inv)
+  if (loadType === 'dumbbell_pair' || loadType === 'dumbbell_single') return buildableDumbbellLoads(inv, loadType)
+  return []
+}
+
+/** Band loads usable as a dumbbell top-up: single bands and stacks, no zero. */
+export const bandLoads = (inv: Inventory): number[] => buildableBandLoads(inv).filter(l => l > 0)
+
+/** Bands owned, heaviest first, for use as bodyweight-exercise assistance. */
+export const assistBands = (inv: Inventory): number[] => [...inv.bands].sort((a, b) => b - a)
 
 export function snapLoad(loads: number[], target: number, mode: 'nearest' | 'up' | 'down' = 'nearest'): number | null {
   if (loads.length === 0) return null

@@ -6,9 +6,8 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
   'biceps', 'triceps', 'costas', 'peito', 'ombros', 'quadriceps', 'posterior_gluteos', 'panturrilha'
 ]
 
-export type LoadType = 'dumbbell_pair' | 'dumbbell_single' | 'bodyweight' | 'pullup_ladder'
+export type LoadType = 'dumbbell_pair' | 'dumbbell_single' | 'bodyweight' | 'pullup_ladder' | 'band'
 export type EvidenceTier = 'W40+' | 'W' | 'X' | 'M' | 'unknown'
-export type BandLevel = 'leve' | 'media' | 'pesada'
 
 export interface Exercise {
   id: string
@@ -21,8 +20,10 @@ export interface Exercise {
   tempo: string
   cues: string[]
   warmupRule: 'ramp' | 'none'
-  /** default first-session load per dumbbell (or single dumbbell) before snapping */
+  /** default first-session load per dumbbell (or single dumbbell, or band) before snapping */
   startKg?: number
+  /** dumbbell exercise: once the inventory's top load is reached, add a band on top instead of flagging a purchase */
+  bandTopUp?: boolean
   evidence: { tier: EvidenceTier; refs: number[]; note: string }
   /** knee check after the session */
   painCheck?: boolean
@@ -55,8 +56,10 @@ export interface SetLog {
   rir: Rir | null
   done: boolean
   amrap?: boolean
-  /** bodyweight exercises: assistance used */
-  assist?: BandLevel | null
+  /** bodyweight/pull-up ladder exercises: assistance band used, in kg */
+  assistKg?: number | null
+  /** dumbbell exercise at the top of the inventory: band added on top, in kg */
+  bandKg?: number | null
   /** pull-up ladder: hold seconds for hang stages */
   holdSec?: number | null
 }
@@ -75,7 +78,7 @@ export interface Session {
 }
 
 export interface PullupTest { date: string; strictReps: number }
-export interface PullupState { stage: number; consecutiveHits: number; tests: PullupTest[] }
+export interface PullupState { stage: number; consecutiveHits: number; tests: PullupTest[]; assistKg?: number | null }
 
 export interface BodyLog { date: string; bodyweightKg?: number; armLeftCm?: number; armRightCm?: number }
 
@@ -87,11 +90,12 @@ export interface Inventory {
   handles: number
   adjustable: AdjustableSet[]
   kettlebells: number[]
-  bands: BandLevel[]
+  /** elastic bands owned, by resistance in kg */
+  bands: number[]
   dipBelt: boolean
 }
 
-export type WeekMode = '6x30' | '4x45'
+export type WeekMode = '6x45' | '4x45'
 export interface Settings {
   startDate: string
   inventory: Inventory

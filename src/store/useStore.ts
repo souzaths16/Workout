@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { AppState, BodyLog, MuscleGroup, Rir, Session, SessionExercise, SetLog, Settings, WeekPlan, BandLevel, Inventory } from '@/domain/types'
+import type { AppState, BodyLog, MuscleGroup, Rir, Session, SessionExercise, SetLog, Settings, WeekPlan, Inventory } from '@/domain/types'
 import { DEFAULT_INVENTORY } from '@/domain/inventory'
 import { buildWeek, planBlocks, shouldTrim, swapDays } from '@/domain/week'
 import { TEMPLATE_BY_ID } from '@/domain/templates'
@@ -8,13 +8,14 @@ import { EXERCISE_BY_ID } from '@/domain/exercises'
 import { prescribe } from '@/domain/prescribe'
 import { soreSwap } from '@/domain/sore'
 import { pullupResult } from '@/domain/pullup'
-import { LADDER_BY_STAGE } from '@/domain/pullupLadder'
+import { LADDER_BY_STAGE, ladderAssistKg } from '@/domain/pullupLadder'
+import { migrateState } from '@/domain/migrate'
 import { mondayOf, toISODate, weekIndexOf } from '@/domain/dates'
 
-const SCHEMA_VERSION = 1
+const SCHEMA_VERSION = 2
 
 export const defaultSettings = (): Settings => ({
-  startDate: toISODate(new Date()), inventory: DEFAULT_INVENTORY, rowingRestDay: true, sessionCapMin: 30, weekMode: '6x30', bodyweightKg: 61, stretchNoteSeen: false
+  startDate: toISODate(new Date()), inventory: DEFAULT_INVENTORY, rowingRestDay: true, sessionCapMin: 45, weekMode: '6x45', bodyweightKg: 61, stretchNoteSeen: false
 })
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36)
@@ -43,7 +44,7 @@ export interface Store extends AppState {
 export const useStore = create<Store>()(persist((set, get) => ({
   schemaVersion: SCHEMA_VERSION,
   settings: defaultSettings(),
-  weeks: [], sessions: [], pullup: { stage: 2, consecutiveHits: 0, tests: [] }, body: [], active: null,
+  weeks: [], sessions: [], pullup: { stage: 2, consecutiveHits: 0, tests: [], assistKg: null }, body: [], active: null,
 
   getWeek: (date) => get().weeks.find(w => w.weekStart === mondayOf(date)),
   ensureWeek: (date) => {
@@ -79,7 +80,8 @@ export const useStore = create<Store>()(persist((set, get) => ({
         rir: null,
         done: false,
         amrap: p.amrapLast && i === b.sets - 1,
-        assist: ladder ? ladder.assist : p.assist,
+        assistKg: ladder ? ladderAssistKg(stage!, st.pullup, st.settings.inventory) : p.assistKg,
+        bandKg: p.bandKg,
         holdSec: ladder && ladder.unit === 'seg' ? null : undefined
       }))
       return { exerciseId: ex.id, sets, stage }
@@ -111,7 +113,7 @@ export const useStore = create<Store>()(persist((set, get) => ({
       const stage = LADDER_BY_STAGE(pullup.stage)
       const done = ladderEx.sets.filter(x => x.done)
       const allHit = done.length === ladderEx.sets.length && done.every(x => (stage.unit === 'seg' ? (x.holdSec ?? 0) : (x.actualReps ?? 0)) >= stage.target && (x.rir ?? 0) <= 1)
-      pullup = pullupResult(pullup, allHit)
+      pullup = pullupResult(pullup, allHit, s.settings.inventory)
     }
     const weeks = s.weeks.map(w => w.weekStart !== mondayOf(session.date) ? w : { ...w, days: w.days.map(d => d.date === session.date ? { ...d, status: 'done' as const } : d) })
     return { active: null, sessions: [...s.sessions, session], weeks, pullup }
@@ -144,18 +146,18 @@ export const useStore = create<Store>()(persist((set, get) => ({
   toggleLightWeek: (date) => { get().ensureWeek(date); set(s => ({ weeks: s.weeks.map(w => w.weekStart === mondayOf(date) ? { ...w, light: !w.light } : w) })) },
 
   logPullupTest: (date, strictReps) => set(s => ({ pullup: { ...s.pullup, tests: [...s.pullup.tests, { date, strictReps }], stage: strictReps >= 3 ? 6 : strictReps >= 1 ? Math.max(s.pullup.stage, 5) : s.pullup.stage } })),
-  setPullupStage: (stage) => set(s => ({ pullup: { ...s.pullup, stage, consecutiveHits: 0 } })),
+  setPullupStage: (stage) => set(s => ({ pullup: { ...s.pullup, stage, consecutiveHits: 0, assistKg: null } })),
   addBody: (log) => set(s => ({ body: [...s.body.filter(b => b.date !== log.date), log].sort((a, b) => a.date.localeCompare(b.date)) })),
   updateSettings: (patch) => set(s => ({ settings: { ...s.settings, ...patch } })),
   updateInventory: (patch) => set(s => ({ settings: { ...s.settings, inventory: { ...s.settings.inventory, ...patch } } })),
   importState: (st) => set({ schemaVersion: st.schemaVersion, settings: st.settings, weeks: st.weeks, sessions: st.sessions, pullup: st.pullup, body: st.body, active: st.active }),
-  resetAll: () => set({ settings: defaultSettings(), weeks: [], sessions: [], pullup: { stage: 2, consecutiveHits: 0, tests: [] }, body: [], active: null })
+  resetAll: () => set({ settings: defaultSettings(), weeks: [], sessions: [], pullup: { stage: 2, consecutiveHits: 0, tests: [], assistKg: null }, body: [], active: null })
 }), {
   name: 'treino-v1',
   storage: createJSONStorage(() => localStorage),
   version: SCHEMA_VERSION,
   partialize: (s) => ({ schemaVersion: s.schemaVersion, settings: s.settings, weeks: s.weeks, sessions: s.sessions, pullup: s.pullup, body: s.body, active: s.active }),
-  migrate: (persisted) => persisted as Store
+  migrate: (persisted) => migrateState(persisted) as Store
 }))
 
-export type { Rir, BandLevel }
+export type { Rir }
