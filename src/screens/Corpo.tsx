@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useStore } from '@/store/useStore'
 import { toISODate } from '@/domain/dates'
+import { parseBodyWeightCsv } from '@/domain/bodyImport'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +13,8 @@ export function Corpo() {
   const [date, setDate] = useState(toISODate(new Date()))
   const [w, setW] = useState(''); const [l, setL] = useState(''); const [r, setR] = useState('')
   const num = (s: string) => (s === '' ? undefined : Number(s))
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null)
   return (
     <div className="p-4">
       <h1 className="mb-3 text-2xl font-bold">{t.corpo.title}</h1>
@@ -22,6 +25,22 @@ export function Corpo() {
           <div><Label>{t.corpo.armL}</Label><Input type="number" inputMode="decimal" step="0.1" value={l} onChange={e => setL(e.target.value)} /></div>
           <div><Label>{t.corpo.armR}</Label><Input type="number" inputMode="decimal" step="0.1" value={r} onChange={e => setR(e.target.value)} /></div>
           <Button className="col-span-2" onClick={() => { st.addBody({ date, bodyweightKg: num(w), armLeftCm: num(l), armRightCm: num(r) }); if (num(w)) st.updateSettings({ bodyweightKg: Number(w) }); setW(''); setL(''); setR('') }}>{t.corpo.save}</Button>
+        </CardContent></Card>
+      <Card className="mt-3"><CardHeader><CardDescription>{t.corpo.importHint}</CardDescription></CardHeader>
+        <CardContent>
+          <Button variant="outline" onClick={() => fileRef.current?.click()}>{t.corpo.importCsv}</Button>
+          <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={async e => {
+            const f = e.target.files?.[0]; if (!f) return
+            try {
+              const logs = parseBodyWeightCsv(await f.text())
+              logs.forEach(l => st.addBody(l))
+              const last = logs.at(-1)
+              if (last?.bodyweightKg) st.updateSettings({ bodyweightKg: last.bodyweightKg })
+              setImportMsg({ ok: true, text: `${logs.length} registro(s) importado(s).` })
+            } catch (ex) { setImportMsg({ ok: false, text: (ex as Error).message }) }
+            e.target.value = ''
+          }} />
+          {importMsg && <p className={`mt-2 text-sm ${importMsg.ok ? 'text-muted-foreground' : 'text-destructive'}`}>{importMsg.text}</p>}
         </CardContent></Card>
       {st.body.length > 0 && <Card className="mt-3"><CardHeader><CardTitle>Registros</CardTitle></CardHeader>
         <CardContent><table className="w-full text-sm"><thead className="text-muted-foreground"><tr><th className="text-left font-normal">Data</th><th className="text-right font-normal">kg</th><th className="text-right font-normal">E cm</th><th className="text-right font-normal">D cm</th></tr></thead>

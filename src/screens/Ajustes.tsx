@@ -3,6 +3,7 @@ import { useStore } from '@/store/useStore'
 import { buildableLoads } from '@/domain/inventory'
 import { exportCsv, exportJson, importJson } from '@/domain/exportImport'
 import { EVIDENCE, TIER_LABEL } from '@/domain/evidence'
+import { CALIBRATABLE_EXERCISES, parseFitbodCsv, suggestFitbodMapping, type FitbodEntry } from '@/domain/fitbodImport'
 import type { BandLevel } from '@/domain/types'
 import { download } from '@/lib/download'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -20,6 +21,11 @@ export function Ajustes() {
   const inv = st.settings.inventory
   const fileRef = useRef<HTMLInputElement>(null)
   const [err, setErr] = useState<string | null>(null)
+  const fitbodFileRef = useRef<HTMLInputElement>(null)
+  const [fitbodEntries, setFitbodEntries] = useState<Map<string, FitbodEntry> | null>(null)
+  const [fitbodMapping, setFitbodMapping] = useState<Record<string, string | null>>({})
+  const [fitbodErr, setFitbodErr] = useState<string | null>(null)
+  const [fitbodApplied, setFitbodApplied] = useState(false)
   const [newPlate, setNewPlate] = useState({ kg: '', count: '' })
   const [newKb, setNewKb] = useState('')
   const [newAdj, setNewAdj] = useState({ min: '2.5', max: '24', step: '2.5' })
@@ -79,6 +85,50 @@ export function Ajustes() {
           <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={async e => { const f = e.target.files?.[0]; if (!f) return; try { st.importState(importJson(await f.text())); setErr(null) } catch (ex) { setErr((ex as Error).message) } e.target.value = '' }} />
           {err && <p className="col-span-2 text-sm text-destructive">{err}</p>}
           <Button variant="destructive" className="col-span-2" onClick={() => { if (confirm(t.ajustes.resetConfirm)) st.resetAll() }}>{t.ajustes.reset}</Button>
+        </CardContent></Card>
+
+      <Card><CardHeader><CardTitle>{t.ajustes.fitbod}</CardTitle><CardDescription>{t.ajustes.fitbodHint}</CardDescription></CardHeader>
+        <CardContent className="space-y-3">
+          <Button variant="outline" onClick={() => fitbodFileRef.current?.click()}>{t.ajustes.fitbodUpload}</Button>
+          <input ref={fitbodFileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={async e => {
+            const f = e.target.files?.[0]; if (!f) return
+            try {
+              const entries = parseFitbodCsv(await f.text())
+              setFitbodEntries(entries); setFitbodMapping(suggestFitbodMapping(entries)); setFitbodErr(null); setFitbodApplied(false)
+            } catch (ex) { setFitbodErr((ex as Error).message); setFitbodEntries(null) }
+            e.target.value = ''
+          }} />
+          {fitbodErr && <p className="text-sm text-destructive">{fitbodErr}</p>}
+          {fitbodEntries && <>
+            <ul className="space-y-2 text-sm">
+              {CALIBRATABLE_EXERCISES.map(ex => {
+                const picked = fitbodMapping[ex.id] ?? ''
+                const entry = picked ? fitbodEntries!.get(picked) : undefined
+                return (
+                  <li key={ex.id} className="flex items-center justify-between gap-2 rounded-md bg-muted px-2 py-1.5">
+                    <span className="flex-1">{ex.nome}</span>
+                    <select className="rounded border bg-background px-1 py-1 text-sm" value={picked}
+                      onChange={e => setFitbodMapping(m => ({ ...m, [ex.id]: e.target.value || null }))}>
+                      <option value="">{t.ajustes.fitbodNone}</option>
+                      {[...fitbodEntries!.keys()].map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                    <span className="w-16 text-right tabular-nums text-muted-foreground">{entry ? `${entry.suggestedKg} kg` : '—'}</span>
+                  </li>
+                )
+              })}
+            </ul>
+            <Button onClick={() => {
+              const overrides: Record<string, number> = {}
+              for (const ex of CALIBRATABLE_EXERCISES) {
+                const picked = fitbodMapping[ex.id]
+                const entry = picked ? fitbodEntries!.get(picked) : undefined
+                if (entry) overrides[ex.id] = entry.suggestedKg
+              }
+              st.updateSettings({ startKgOverrides: { ...st.settings.startKgOverrides, ...overrides } })
+              setFitbodApplied(true)
+            }}>{t.ajustes.fitbodApply}</Button>
+            {fitbodApplied && <p className="text-sm text-muted-foreground">{t.ajustes.fitbodApplied}</p>}
+          </>}
         </CardContent></Card>
 
       <Card><CardHeader><CardTitle>{t.ajustes.evidence}</CardTitle><CardDescription>Hierarquia: mulheres 40+ → mulheres → sexo misto/homens (extrapolado, sempre sinalizado).</CardDescription></CardHeader>
