@@ -11,6 +11,7 @@ import { pullupResult } from '@/domain/pullup'
 import { LADDER_BY_STAGE, ladderAssistKg } from '@/domain/pullupLadder'
 import { migrateState } from '@/domain/migrate'
 import { mondayOf, toISODate, weekIndexOf } from '@/domain/dates'
+import { pushBackup } from '@/lib/sync'
 
 const SCHEMA_VERSION = 2
 
@@ -159,5 +160,15 @@ export const useStore = create<Store>()(persist((set, get) => ({
   partialize: (s) => ({ schemaVersion: s.schemaVersion, settings: s.settings, weeks: s.weeks, sessions: s.sessions, pullup: s.pullup, body: s.body, active: s.active }),
   migrate: (persisted) => migrateState(persisted) as Store
 }))
+
+let syncTimer: ReturnType<typeof setTimeout> | null = null
+useStore.subscribe((s) => {
+  if (!s.settings.syncUrl || !s.settings.syncToken) return
+  if (syncTimer) clearTimeout(syncTimer)
+  syncTimer = setTimeout(() => {
+    const state: AppState = { schemaVersion: s.schemaVersion, settings: s.settings, weeks: s.weeks, sessions: s.sessions, pullup: s.pullup, body: s.body, active: s.active }
+    pushBackup(s.settings.syncUrl!, s.settings.syncToken!, state).catch(() => {})
+  }, 2000)
+})
 
 export type { Rir }
