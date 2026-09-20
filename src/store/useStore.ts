@@ -64,7 +64,9 @@ export const useStore = create<Store>()(persist((set, get) => ({
     const trim = shouldTrim(templateId, st.sessions, st.settings.sessionCapMin)
     const blocks = planBlocks(t, wi, !!week.light, trim)
     const exercises: SessionExercise[] = blocks.map(b => {
-      const ex = EXERCISE_BY_ID[b.exerciseId]
+      const base = EXERCISE_BY_ID[b.exerciseId]
+      const override = st.settings.startKgOverrides?.[base.id]
+      const ex = override != null ? { ...base, startKg: override } : base
       const history = st.sessions.filter(s => s.finishedAt).flatMap(s => s.exercises.filter(e => e.exerciseId === ex.id))
       const p = prescribe(ex, history, st.settings.inventory, wi, b.sets)
       const stage = ex.loadType === 'pullup_ladder' ? st.pullup.stage : undefined

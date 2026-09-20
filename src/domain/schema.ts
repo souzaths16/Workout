@@ -21,7 +21,8 @@ export const inventorySchema = z.object({
 })
 export const settingsSchema = z.object({
   startDate: z.string(), inventory: inventorySchema, rowingRestDay: z.boolean(), sessionCapMin: z.number(),
-  weekMode: z.enum(['6x45', '4x45']), bodyweightKg: z.number(), stretchNoteSeen: z.boolean()
+  weekMode: z.enum(['6x45', '4x45']), bodyweightKg: z.number(), stretchNoteSeen: z.boolean(),
+  startKgOverrides: z.record(z.string(), z.number()).optional()
 })
 export const appStateSchema = z.object({
   schemaVersion: z.number(), settings: settingsSchema, weeks: z.array(weekSchema), sessions: z.array(sessionSchema),
