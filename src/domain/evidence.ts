@@ -42,7 +42,10 @@ export const EVIDENCE: EvidenceItem[] = [
   { n: 37, claim: 'Escada da barra fixa (pendurada → escapular → negativas → banda → estrita): sem RCT em mulheres.', source: 'Programa do US Marine Corps (Posey)', tier: 'unknown', strength: 'Desconhecida (prática)' },
   { n: 38, claim: 'Dupla progressão como regra.', source: '—', tier: 'unknown', strength: 'Desconhecida como regra testada; forma operacional da sobrecarga progressiva' },
   { n: 39, claim: 'Semanas de deload.', source: '—', tier: 'unknown', strength: 'Desconhecida / contestada; só manual' },
-  { n: 40, claim: 'Proteína ≈1,6 g/kg/dia é o platô para ganho de massa magra.', source: 'Morton et al. 2018, Br J Sports Med (49 RCTs)', tier: 'X', strength: 'Forte (informativo)' }
+  { n: 40, claim: 'Proteína ≈1,6 g/kg/dia é o platô para ganho de massa magra.', source: 'Morton et al. 2018, Br J Sports Med (49 RCTs)', tier: 'X', strength: 'Forte (informativo)' },
+  { n: 41, claim: 'Treinar com banda elástica e com peso convencional dão ganho de força muscular semelhante.', source: 'Lopes et al. 2019, SAGE Open Med (meta-análise)', tier: 'X', strength: 'Moderada (extrapolado)' },
+  { n: 42, claim: 'Flexão com banda elástica e supino reto, igualados em ativação muscular, deram ganho de força semelhante.', source: 'Calatayud et al. 2015, J Strength Cond Res (30 homens)', tier: 'M', strength: 'Fraca (extrapolado)' },
+  { n: 43, claim: 'A resistência da banda cresce com o estiramento: ela ajuda mais perto do corpo e menos na posição alongada, o oposto do halter. Por isso exercícios de viés alongado (rosca, terra romeno, panturrilha) mantêm o halter como carga principal.', source: '—', tier: 'unknown', strength: 'Desconhecida como regra testada; princípio de biomecânica da banda' }
 ]
 
 export const TIER_LABEL: Record<EvidenceTier, string> = {

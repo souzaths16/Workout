@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '@/store/useStore'
-import { LADDER } from '@/domain/pullupLadder'
+import { LADDER, ladderAssistKg } from '@/domain/pullupLadder'
 import { nextTestDate } from '@/domain/pullup'
 import { toISODate } from '@/domain/dates'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -24,7 +24,7 @@ export function BarraFixa() {
           <Card key={s.stage} className={cn(cur && 'border-primary', past && 'opacity-60')}>
             <CardHeader className="flex-row items-center justify-between">
               <div><CardTitle>{s.stage}. {s.nome}</CardTitle><CardDescription>{s.descricao} · {s.sets} × {s.target} {s.unit}</CardDescription></div>
-              {cur && <Badge>{t.barra.stage} atual · {st.pullup.consecutiveHits}/2</Badge>}
+              {cur && <Badge>{t.barra.stage} atual{s.assist === 'progress' ? ` · banda ${ladderAssistKg(st.pullup.stage, st.pullup, st.settings.inventory)} kg` : ''} · {st.pullup.consecutiveHits}/2</Badge>}
             </CardHeader>
           </Card>
         ) })}

@@ -4,7 +4,7 @@ import { useStore } from '@/store/useStore'
 import { MUSCLE_GROUPS } from '@/domain/types'
 import { EXERCISES, EXERCISE_BY_ID } from '@/domain/exercises'
 import { adherence, bestE1rm, e1rmSeries, weeklyVolume } from '@/domain/stats'
-import { LADDER } from '@/domain/pullupLadder'
+import { LADDER, ladderAssistKg } from '@/domain/pullupLadder'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { GROUP_COLOR, SERIES, INK, chartMargin, tooltipStyle, axisProps } from '@/components/charts/theme'
 import { t } from '@/i18n/pt-BR'
@@ -57,7 +57,7 @@ export function Progresso() {
           </ResponsiveContainer>)}
         </CardContent></Card>
 
-      <Card><CardHeader><CardTitle>{t.progresso.pullup}</CardTitle><CardDescription>Estágio atual: {st.pullup.stage} · {LADDER[st.pullup.stage].nome}</CardDescription></CardHeader>
+      <Card><CardHeader><CardTitle>{t.progresso.pullup}</CardTitle><CardDescription>Estágio atual: {st.pullup.stage} · {LADDER[st.pullup.stage].nome}{LADDER[st.pullup.stage].assist === 'progress' ? ` · banda ${ladderAssistKg(st.pullup.stage, st.pullup, st.settings.inventory)} kg` : ''}</CardDescription></CardHeader>
         <CardContent className="space-y-3 px-1">
           {stageSeries.length === 0 ? empty : (
             <ResponsiveContainer width="100%" height={H - 40}>

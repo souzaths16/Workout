@@ -112,8 +112,10 @@ export function Hoje() {
                 <div className="flex items-start justify-between gap-2"><CardTitle>{ex.nome}</CardTitle><EvidenceBadge ex={ex} /></div>
                 <CardDescription>
                   {block.sets} × {ex.loadType === 'pullup_ladder' ? `${LADDER_BY_STAGE(st.pullup.stage).target} ${LADDER_BY_STAGE(st.pullup.stage).unit} · ${LADDER_BY_STAGE(st.pullup.stage).nome}` : `${p.reps[0]}${p.reps[0] !== p.reps[p.reps.length - 1] ? '–' + p.reps[p.reps.length - 1] : ''} reps`}
-                  {p.loadKg != null && ex.loadType !== 'pullup_ladder' ? ` · ${p.loadKg} kg${ex.loadType === 'dumbbell_pair' ? ' por halter' : ''}` : ''}
-                  {p.assist ? ` · ${t.hoje.assist} ${p.assist}` : ''}
+                  {p.loadKg != null && ex.loadType !== 'pullup_ladder' && ex.loadType !== 'band' ? ` · ${p.loadKg} kg${ex.loadType === 'dumbbell_pair' ? ' por halter' : ''}` : ''}
+                  {ex.loadType === 'band' ? ` · ${p.loadKg ? `banda ${p.loadKg} kg` : t.hoje.noBand}` : ''}
+                  {p.assistKg != null ? ` · ${t.hoje.assist} ${p.assistKg} kg` : ''}
+                  {p.bandKg != null ? ` · ${t.hoje.topUp} ${p.bandKg} kg` : ''}
                   {block.pairedWith ? ` · ${t.hoje.paired} ${EXERCISE_BY_ID[block.pairedWith].nome.split(' ')[0].toLowerCase()}` : ''}
                 </CardDescription>
                 {p.calibration && <Badge variant="outline" className="w-fit">{t.hoje.calibration}</Badge>}
@@ -157,7 +159,7 @@ export function Hoje() {
                 <div className="flex items-start justify-between gap-2"><CardTitle>{ex.nome}</CardTitle><EvidenceBadge ex={ex} /></div>
                 <CardDescription>{ex.repRange[0]}–{ex.repRange[1]} {ex.loadType === 'pullup_ladder' ? LADDER_BY_STAGE(stage ?? 0).unit : 'reps'} · {ex.tempo}{block?.pairedWith ? ` · ${t.hoje.paired} ${EXERCISE_BY_ID[block.pairedWith].nome.split(' ')[0].toLowerCase()}` : ''}</CardDescription>
                 {ex.loadType === 'pullup_ladder' && <p className="text-xs text-muted-foreground">{LADDER_BY_STAGE(stage ?? 0).nome}: {LADDER_BY_STAGE(stage ?? 0).descricao}</p>}
-                {se.sets[0]?.suggestedLoadKg == null && ex.loadType !== 'pullup_ladder' && ex.loadType !== 'bodyweight' && <Badge variant="warning" className="w-fit">{t.hoje.buy}</Badge>}
+                {se.sets[0]?.suggestedLoadKg == null && ex.loadType !== 'pullup_ladder' && ex.loadType !== 'bodyweight' && ex.loadType !== 'band' && <Badge variant="warning" className="w-fit">{t.hoje.buy}</Badge>}
               </CardHeader>
               <CardContent className="space-y-1">
                 <SetHeader ex={ex} stage={stage} />
