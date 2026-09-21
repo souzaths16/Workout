@@ -10,7 +10,7 @@ import { soreSwap } from '@/domain/sore'
 import { pullupResult } from '@/domain/pullup'
 import { LADDER_BY_STAGE, ladderAssistKg } from '@/domain/pullupLadder'
 import { migrateState } from '@/domain/migrate'
-import { mondayOf, toISODate, weekIndexOf } from '@/domain/dates'
+import { toISODate, weekIndexOf, weekStartOf } from '@/domain/dates'
 import { pushBackup } from '@/lib/sync'
 
 const SCHEMA_VERSION = 2
@@ -47,9 +47,9 @@ export const useStore = create<Store>()(persist((set, get) => ({
   settings: defaultSettings(),
   weeks: [], sessions: [], pullup: { stage: 2, consecutiveHits: 0, tests: [], assistKg: null }, body: [], active: null,
 
-  getWeek: (date) => get().weeks.find(w => w.weekStart === mondayOf(date)),
+  getWeek: (date) => { const st = get(); return st.weeks.find(w => w.weekStart === weekStartOf(st.settings.startDate, date)) },
   ensureWeek: (date) => {
-    const ws = mondayOf(date)
+    const ws = weekStartOf(get().settings.startDate, date)
     const existing = get().weeks.find(w => w.weekStart === ws)
     if (existing) return existing
     const w = buildWeek(ws, get().settings)
@@ -116,14 +116,14 @@ export const useStore = create<Store>()(persist((set, get) => ({
       const allHit = done.length === ladderEx.sets.length && done.every(x => (stage.unit === 'seg' ? (x.holdSec ?? 0) : (x.actualReps ?? 0)) >= stage.target && (x.rir ?? 0) <= 1)
       pullup = pullupResult(pullup, allHit, s.settings.inventory)
     }
-    const weeks = s.weeks.map(w => w.weekStart !== mondayOf(session.date) ? w : { ...w, days: w.days.map(d => d.date === session.date ? { ...d, status: 'done' as const } : d) })
+    const weeks = s.weeks.map(w => w.weekStart !== weekStartOf(s.settings.startDate, session.date) ? w : { ...w, days: w.days.map(d => d.date === session.date ? { ...d, status: 'done' as const } : d) })
     return { active: null, sessions: [...s.sessions, session], weeks, pullup }
   }),
   discardSession: () => set({ active: null }),
 
   logRowing: (date, minutes) => set(s => {
     const session: Session = { id: uid(), date, templateId: 'remo', startedAt: new Date().toISOString(), finishedAt: new Date().toISOString(), durationSec: minutes * 60, exercises: [], rowingMin: minutes }
-    const weeks = s.weeks.map(w => w.weekStart !== mondayOf(date) ? w : { ...w, days: w.days.map(d => d.date === date ? { ...d, status: 'done' as const } : d) })
+    const weeks = s.weeks.map(w => w.weekStart !== weekStartOf(s.settings.startDate, date) ? w : { ...w, days: w.days.map(d => d.date === date ? { ...d, status: 'done' as const } : d) })
     return { sessions: [...s.sessions, session], weeks }
   }),
 
@@ -140,11 +140,11 @@ export const useStore = create<Store>()(persist((set, get) => ({
     const week = st.ensureWeek(date)
     const i = week.days.findIndex(d => d.date === date)
     const j = week.days.findIndex(d => d.date === otherDate)
-    if (i < 0 || j < 0 || week.days[i].status !== 'planned' || week.days[j].status !== 'planned') return
+    if (i < 0 || j < 0 || week.days[i].status === 'done' || week.days[j].status === 'done') return
     const updated = swapDays(week, i, j)
     set(s => ({ weeks: s.weeks.map(w => w.weekStart === week.weekStart ? updated : w), active: null }))
   },
-  toggleLightWeek: (date) => { get().ensureWeek(date); set(s => ({ weeks: s.weeks.map(w => w.weekStart === mondayOf(date) ? { ...w, light: !w.light } : w) })) },
+  toggleLightWeek: (date) => { get().ensureWeek(date); set(s => ({ weeks: s.weeks.map(w => w.weekStart === weekStartOf(s.settings.startDate, date) ? { ...w, light: !w.light } : w) })) },
 
   logPullupTest: (date, strictReps) => set(s => ({ pullup: { ...s.pullup, tests: [...s.pullup.tests, { date, strictReps }], stage: strictReps >= 3 ? 6 : strictReps >= 1 ? Math.max(s.pullup.stage, 5) : s.pullup.stage } })),
   setPullupStage: (stage) => set(s => ({ pullup: { ...s.pullup, stage, consecutiveHits: 0, assistKg: null } })),

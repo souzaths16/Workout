@@ -40,7 +40,7 @@ test('log a session, persist across reload, chart it, export, reset and import',
   await expect(page.getByRole('button', { name: 'Começar treino' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Ajustes' }).click()
-  await page.locator('input[type=file]').setInputFiles(file!)
+  await page.locator('input[type=file][accept="application/json"]').setInputFiles(file!)
   await page.getByRole('button', { name: 'Hoje', exact: true }).click()
   await expect(page.getByText('Treino concluído')).toBeVisible()
   await page.screenshot({ path: 'test-results/05-ajustes.png', fullPage: true })
